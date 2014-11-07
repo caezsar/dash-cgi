@@ -38,7 +38,7 @@ cat << EOF
 
                 <ul class="nav pull-right">
                             <li>
-                      <a target="_blank" href="http://tools.tecmint.com/m">
+                      <a target="_blank" href="http://tools.tecmint.com">
                       <i class="lead icon-home"></i>
                     <span class="lead">Go Home</span>
                     </a>
