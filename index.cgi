@@ -38,37 +38,37 @@ cat << EOF
 
                 <ul class="nav pull-right">
                             <li>
-                      <a target="_blank" href="http://tools.tecmint.com">
+                      <a target="_blank" href="http://webroot_here">
                       <i class="lead icon-home"></i>
                     <span class="lead">Go Home</span>
                     </a>
                             </li>
 
                             <li>
-                      <a target="_blank" href="../logs.cgi">
+                      <a target="_blank" href="another_link">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Logs</span>
+                    <span class="lead">Link1</span>
                     </a>
                             </li>
 
                             <li>
-                      <a target="_blank" href="../logwatch.cgi">
+                      <a target="_blank" href="link_2">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Logwatch</span>
+                    <span class="lead">Link2</span>
                     </a>
                             </li>
 
 
                             <li>
-                      <a target="_blank" href="../webalizer/index.html">
+                      <a target="_blank" href="link3.html">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Webalizer</span>
+                    <span class="lead">Link3</span>
                     </a>
                             </li>
                             <li>
-                      <a target="_blank" href="../info.cgi">
+                      <a target="_blank" href="link4.cgi">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Info</span>
+                    <span class="lead">Link4</span>
                     </a>
                             </li>
                         </ul>
@@ -134,7 +134,6 @@ cat << EOF
             <div class="main-inner">
                 <div class="container">
                     <div class="lead" style="text-align: center;">
-                       <!-- <div class="btn icon-refresh js-refresh-info" data-title="Refresh all widgets!" data-toggle="tooltip" id="refresh-all"></div> -->
                         <div>
                            Information generated at `date`
                         </div>
@@ -512,7 +511,7 @@ cat << EOF
                 <div class="container">
                     <div class="row">
                         <div class="span12">
-                            Modified by: <a href="http://tools.tecmint.com/m/">Matei Cezar</a>
+                            Modified by: <a href="https://github.com/caezsar/dash-cgi/">Matei Cezar</a>
                         </div><!-- /span12 -->
                     </div><!-- /row -->
                 </div><!-- /container -->
