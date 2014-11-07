@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "Content-type: text/html"
 
-bper=`cat /var/log/apache2/tools.tecmint.com-access.log | grep -v "(internal dummy connection)" | head -1 | /usr/bin/awk '{print $4}' | cut -d"[" -f2 | cut -d: -f1 | sed 's/\//./g'`
-fper=`cat /var/log/apache2/tools.tecmint.com-access.log | grep -v "(internal dummy connection)" | tail -1 | /usr/bin/awk '{print $4}' | cut -d"[" -f2 | cut -d: -f1 | sed 's/\//./g'`
+bper=`cat /var/log/apache2/access.log | grep -v "(internal dummy connection)" | head -1 | /usr/bin/awk '{print $4}' | cut -d"[" -f2 | cut -d: -f1 | sed 's/\//./g'`
+fper=`cat /var/log/apache2/access.log | grep -v "(internal dummy connection)" | tail -1 | /usr/bin/awk '{print $4}' | cut -d"[" -f2 | cut -d: -f1 | sed 's/\//./g'`
 uniq=`cat /var/log/apache2/tools.tecmint.com-access.log | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l`
 cat << EOF
 
