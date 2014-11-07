@@ -11,7 +11,7 @@ cat << EOF
     <head>
         <title>linux-dash : Server Monitoring Web Dashboard on `hostname -f` </title>
        <!-- <meta http-equiv="refresh" content="5" /> -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Monitor your Linux server through a simple web dashboard. Open source and free!">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
