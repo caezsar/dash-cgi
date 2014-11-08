@@ -337,7 +337,7 @@ cat << EOF
                                     <div class="widget-content">
                                         <div class="general-info-item">
                                             <span class="general-title">Runlevel</span>
-                                            <span class="general-data" id="os-info"> `runlevel` </span>
+                                            <span class="general-data" id="os-info"> `/sbin/runlevel` </span>
                                         </div>
                                         <div class="general-info-item">
                                             <span class="general-title">Swap Usage</span>
@@ -489,7 +489,6 @@ cat << EOF
 			</div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
-
 
 
                        <div class="span12">
