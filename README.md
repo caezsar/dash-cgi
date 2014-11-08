@@ -1,7 +1,4 @@
-dash-cgi
-========
 
-<<<<<<< HEAD
 Linux-dash server monitoring for apache/nginx CGI gateway environment
 =======
 Linux-dash server monitoring for Apache CGI gateway environment for Ubuntu && Debian in raw format.
@@ -20,7 +17,5 @@ Installation:
 - Visit `http://your_fqdn or server address/dash-cgi/`
 
 
-
->>>>>>> cc13e5f9e858dec1dfcf0b8890be85067ff2e4e1
 
 
