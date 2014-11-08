@@ -10,7 +10,7 @@ Install `sysstat, vnstat, wget`tools.
 
 Installation:
 
-- Clone the app into your apache webroot host (Ex: `/var/www/html`) with using Git cmd line:
+- Clone the app into your apache webroot host (Ex: `/var/www/html/`) with using Git cmd line:
 
 `https://github.com/caezsar/dash-cgi.git`
 
