@@ -186,12 +186,42 @@ cat << EOF
                                             <span class="general-title">Last Reboot</span>
                                             <span class="general-data" id="os-info"> `who -b` </span>
                                         </div>
-
-
                                     </div>
                                 </div><!-- /widget -->
                             </div> <!-- /span3 -->
 
+			
+							
+                        <div class="span5">
+                                <div id="ram-widget" class="widget widget-nopad">
+                                    <div class="widget-header">
+                                        <i class="icon-list-alt"></i>
+                                        <h3>
+                                            RAM
+                                        </h3>
+                                        <div id="refresh-ram" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content">
+                                        <div class="big-stats-container">
+                                            <div class="widget-content">
+                                                <div class="cf big_stats">
+                                                    <div class="stat">
+<i class="icon-#">Total&nbsp;</i> <span  id="ram-total"></span>  <h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $2}' 2>/dev/null`</font></h2>
+                                                    </div><!-- .stat -->
+                                                    <div class="stat">
+<i class="icon-#">Used&nbsp;</i> <span id="ram-used"></span> <h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $3}' 2>/dev/null `</font></h2><br>                                                    
+                                                    </div><!-- .stat -->
+                                                    <div class="stat">
+<i class="icon-#">Free&nbsp;</i> <span id="ram-free"></span><h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $4}' 2>/dev/null`</font></h2><br>                                                 
+                                                    </div><!-- .stat -->
+                                                </div>
+                                            </div><!-- /widget-content -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- /span5 -->
+
+							
                         <div class="span4">
                             <div id="load-average-widget" class="widget">
                                 <div class="widget-header">
@@ -224,36 +254,41 @@ cat << EOF
                         </div> <!-- /span4 -->
 
 						
-                        <div class="span5">
-                                <div id="ram-widget" class="widget widget-nopad">
+							<div class="span6">
+                                <div id="arp-widget" class="widget widget-table">
                                     <div class="widget-header">
-                                        <i class="icon-list-alt"></i>
+                                        <i class="icon-list"></i>
                                         <h3>
-                                            RAM
+                                            I/O Stats
                                         </h3>
-                                        <div id="refresh-ram" class="btn icon-refresh js-refresh-info"></div>
+                                        <div id="refresh-arp" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
-                                    <div class="widget-content">
-                                        <div class="big-stats-container">
-                                            <div class="widget-content">
-                                                <div class="cf big_stats">
-                                                    <div class="stat">
-<i class="icon-#">Total&nbsp;</i> <span  id="ram-total"></span>  <h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $2}' 2>/dev/null`</font></h2>
-                                                    </div><!-- .stat -->
-                                                    <div class="stat">
-<i class="icon-#">Used&nbsp;</i> <span id="ram-used"></span> <h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $3}' 2>/dev/null `</font></h2><br>                                                    
-                                                    </div><!-- .stat -->
-                                                    <div class="stat">
-<i class="icon-#">Free&nbsp;</i> <span id="ram-free"></span><h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $4}' 2>/dev/null`</font></h2><br>                                                 
-                                                    </div><!-- .stat -->
-                                                </div>
-                                            </div><!-- /widget-content -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> <!-- /span5 -->
-		
-             <div class="span3">
+										<div class="widget-content"><p> </p>
+<table id="arp_dashboard" class="table table-hover table-condensed table-bordered"><pre><h5><font color="#303A34"> `iostat -hm 2>/dev/null` </font></h5></pre></table>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->
+
+							
+
+							<div class="span6">
+                                <div id="disk-usage-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-list"></i>
+                                        <h3>
+                                            Disk Usage
+                                        </h3>
+                                        <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+<table id="df_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h4><font color="#303A34"> `df -h 2>/dev/null` </font></h4></pre> </table>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->
+							
+							
+
+						<div class="span3">
                             <div id="ip-widget" class="widget widget-table">
                                 <div class="widget-header">
                                     <i class="icon-monitor"></i>
@@ -268,24 +303,9 @@ cat << EOF
                                 </div><!-- /widget-content -->
                             </div><!-- /widget -->
                         </div><!-- /span3 --> 
+						
+						
 
-                        <div class="span4">
-                                <div id="bandwidth-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-exchange"></i>
-                                        <h3>
-                                            Bandwidth
-                                        </h3>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content">
-                                        <div style="padding:10px;text-align:center;">
-<i style="color:#19bc9c; font:20px/2em 'Open Sans',sans-serif;" class="icon-#" >eth0:</i>&nbsp; <h4><font color="#303A34"> RX: <span> `echo $eth0_rx 2>/dev/null` </span>&nbsp;&nbsp;|&nbsp;&nbsp; TX: <span> `echo $eth0_tx 2>/dev/null` </span></h4></font> 
-                                        </div>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span4 -->
-
-							
                         <div class="span3">
                             <div id="ip-widget" class="widget widget-table">
                                 <div class="widget-header">
@@ -302,37 +322,41 @@ cat << EOF
                                 </div><!-- /widget-content -->
                             </div><!-- /widget -->
                         </div><!-- /span3 --> 
-						
-						
-							<div class="span6">
-                                <div id="disk-usage-widget" class="widget widget-table">
+												
+
+
+                       <div class="span3">
+                                <div id="general-info-widget" class="widget widget-table action-table">
                                     <div class="widget-header">
-                                        <i class="icon-list"></i>
+                                        <i class="icon-info-sign"></i>
                                         <h3>
-                                            Disk Usage
+                                            System
                                         </h3>
-                                        <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
+                                        <div id="refresh-os" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-<table id="df_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h4><font color="#303A34"> `df -h 2>/dev/null` </font></h4></pre> </table>
-                                    </div><!-- /widget-content -->
+                                    <div class="widget-content">
+                                        <div class="general-info-item">
+                                            <span class="general-title">Runlevel</span>
+                                            <span class="general-data" id="os-info"> `runlevel` </span>
+                                        </div>
+                                        <div class="general-info-item">
+                                            <span class="general-title">Swap Usage</span>
+                                            <span id="os-uptime"> `free -m | awk '/Swap/ { printf("%3.1f%%", $3/$2*100) }'` </span>
+                                        </div>
+                                     <div class="general-info-item">
+                                            <span class="general-title">Total Processes</span>
+                                            <span id="os-time"> `ps aux | wc -l` </span>
+                                        </div> 
+                                        <div class="general-info-item">
+                                            <span class="general-title">Boot Services</span>
+<span class="general-data" id="os-info"> `ls /etc/rc2.d/ | grep S | wc -l` / `ls /etc/rc2.d/ | grep -v README | wc -l` </span>											
+                                            <span id="os-hostname"> <pre> `ls /etc/rc2.d/ | grep S | cut -d"S" -f2 | cut -b 3-20` </pre></span>
+                                        </div>
+                                    </div>
                                 </div><!-- /widget -->
-                            </div><!-- /span6 -->
-                       
- 			   <div class="span6">
-                                <div id="arp-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-list"></i>
-                                        <h3>
-                                            I/O Stats
-                                        </h3>
-                                        <div id="refresh-arp" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-										<div class="widget-content"><p> </p>
-<table id="arp_dashboard" class="table table-hover table-condensed table-bordered"><pre><h5><font color="#303A34"> `iostat -hm 2>/dev/null` </font></h5></pre></table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span6 -->
+                            </div> <!-- /span3 -->
+							
+
 
                             <div class="span16">
                                 <div id="swap-widget" class="widget widget-table">
@@ -348,6 +372,42 @@ cat << EOF
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
+
+
+
+							<div class="span4">
+                                <div id="users-widget" class="widget widget-table action-table">
+                                    <div class="widget-header">
+                                        <i class="icon-group"></i>
+                                        <h3>
+                                            CPU Info
+                                        </h3>
+                                        <div id="refresh-users" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+<table id="cpu" class="table table-hover table-bordered table-condensed"><pre><h5><font color="#303A34"> `lscpu 2>/dev/null` </font></h5></pre> </table>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span4 -->
+
+
+							
+							<div class="span4">
+                                <div id="bandwidth-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-exchange"></i>
+                                        <h3>
+                                            Bandwidth
+                                        </h3>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content">
+                                        <div style="padding:10px;text-align:center;">
+<i style="color:#19bc9c; font:20px/2em 'Open Sans',sans-serif;" class="icon-#" >eth0:</i>&nbsp; <h4><font color="#303A34"> RX: <span> `echo $eth0_rx 2>/dev/null` </span>&nbsp;&nbsp;|&nbsp;&nbsp; TX: <span> `echo $eth0_tx 2>/dev/null` </span></h4></font> 
+                                        </div>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span4 -->
+				
 
                             <div class="span14">
                                 <div id="swap-widget" class="widget widget-table">
@@ -381,22 +441,23 @@ cat << EOF
                             </div>
                         </div> <!-- /span6 -->
 						
-
-							<div class="span4">
-                                <div id="users-widget" class="widget widget-table action-table">
+							
+							<div class="span17">
+                                <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
-                                        <i class="icon-group"></i>
+                                        <i class="icon-dashboard"></i>
                                         <h3>
-                                            CPU Info
+                                            Last logins
                                         </h3>
-                                        <div id="refresh-users" class="btn icon-refresh js-refresh-info"></div>
+                                        <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-<table id="cpu" class="table table-hover table-bordered table-condensed"><pre><h5><font color="#303A34"> `lscpu 2>/dev/null` </font></h5></pre> </table>
+<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `last -i 2>/dev/null` </font></h5></pre> </table>
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
-                            </div><!-- /span4 -->
-
+                            </div><!-- /span9 -->
+							
+							
 			
 					   <div class="span6">
                                 <div id="software-widget" class="widget widget-table">
@@ -429,22 +490,7 @@ cat << EOF
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
 
-							
-							<div class="span17">
-                                <div id="swap-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-dashboard"></i>
-                                        <h3>
-                                            Last logins
-                                        </h3>
-                                        <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `last -i 2>/dev/null` </font></h5></pre> </table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span9 -->
-							
+
 
                        <div class="span12">
                                 <div id="process-widget" class="widget widget-table">
