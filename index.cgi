@@ -356,8 +356,7 @@ cat << EOF
                                 </div><!-- /widget -->
                             </div> <!-- /span3 -->
 							
-
-
+							
                             <div class="span16">
                                 <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
