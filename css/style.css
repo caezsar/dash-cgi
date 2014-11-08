@@ -52,7 +52,7 @@ textarea {
 }
 
 .table-bordered th {
-	background: #E9E9E9;
+	background: #2B5486;
 	background:-moz-linear-gradient(top, #FAFAFA 0%, #E9E9E9 100%); /* FF3.6+ */
 	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#FAFAFA), color-stop(100%,#E9E9E9)); /* Chrome,Safari4+ */
 	background:-webkit-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* Chrome10+,Safari5.1+ */
@@ -78,8 +78,8 @@ textarea {
 
 .navbar-inner {
 	padding: 4px 0;
-	
-	background: #3E90BF !important;
+	background:url(fg.png);
+
 	
 	-moz-border-radius: 0;
 	-webkit-border-radius: 0;
