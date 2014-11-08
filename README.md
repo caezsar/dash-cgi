@@ -12,7 +12,7 @@ Installation:
 
 - Clone the app into your apache webroot host (Ex: `/var/www/html/`) with using Git cmd line:
 
-`https://github.com/caezsar/dash-cgi.git`
+`git clone https://github.com/caezsar/dash-cgi.git`
 
 - Visit `http://your_fqdn or server address/dash-cgi/`
 
