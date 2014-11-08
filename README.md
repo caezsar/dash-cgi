@@ -16,6 +16,7 @@ Installation:
 
 - Visit `http://your_fqdn or server address/dash-cgi/`
 
+![alt text](https://raw.githubusercontent.com/caezsar/dash-cgi/master/screenshot.jpg "screenshot")
 
 
 
