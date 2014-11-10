@@ -1,11 +1,11 @@
 #!/bin/bash
-echo ""
+echo "Content-type: text/html"
 
-bper=`/bin/cat 2>/dev/null /var/log/apache2/access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
-fper=`/bin/cat 2>/dev/null /var/log/apache2/access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
-uniq=`/bin/cat /var/log/apache2/access.log | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l 2>/dev/null `
-eth0_rx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $3, $4}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`
-eth0_tx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $7, $8}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`
+bper=`/bin/cat 2>/dev/null /var/log/apache2/tools.tecmint.com-access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
+fper=`/bin/cat 2>/dev/null /var/log/apache2/tools.tecmint.com-access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
+uniq=`cat /var/log/apache2/tools.tecmint.com-access.log | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l`
+eth0_rx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $3, $4}'| cut -d"(" -f2 | cut -d")" -f1`
+eth0_tx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $7, $8}'| cut -d"(" -f2 | cut -d")" -f1`
 
 cat << EOF
 
@@ -14,7 +14,7 @@ cat << EOF
     <head>
         <title>linux-dash : Server Monitoring Web Dashboard on `hostname -f` </title>
        <!-- <meta http-equiv="refresh" content="5" /> -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Monitor your Linux server through a simple web dashboard. Open source and free!">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
@@ -41,47 +41,46 @@ cat << EOF
 
                 <ul class="nav pull-right">
                             <li>
-                      <a target="_blank" href="/">
+                      <a target="_blank" href="http://tools.tecmint.com/m">
                       <i class="lead icon-home"></i>
                     <span class="lead">Go Home</span>
                     </a>
                             </li>
 
                             <li>
-                      <a target="_blank" href="https://github.com/caezsar/dash-cgi/">
-                      <i class="lead icon-github"></i>
-                    <span class="lead">GitHub</span>
+                      <a target="_blank" href="../logs.cgi">
+                      <i class="lead icon-info"></i>
+                    <span class="lead">Logs</span>
                     </a>
                             </li>
 
-                        <!--    <li>
-                      <a target="_blank" href="link_2">
+                            <li>
+                      <a target="_blank" href="../logwatch.cgi">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Link2</span>
+                    <span class="lead">Logwatch</span>
                     </a>
                             </li>
 
 
                             <li>
-                      <a target="_blank" href="link3.html">
+                      <a target="_blank" href="../webalizer/index.html">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Link3</span>
+                    <span class="lead">Webalizer</span>
                     </a>
                             </li>
-							
                             <li>
-                      <a target="_blank" href="link4.cgi">
+                      <a target="_blank" href="../info.cgi">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Link4</span>
+                    <span class="lead">Info</span>
                     </a>
-                            </li> -->
+                            </li>
                         </ul>
 					</div>
                 </div>
             </div>
         </div>
-		
-		
+
+
      <div class="subnavbar">
             <div class="subnavbar-inner">
 
@@ -106,14 +105,10 @@ cat << EOF
                         <li>
                             <a class="js-smoothscroll" href="#refresh-ram"><i class="icon-list-alt"></i><span>RAM</span></a>
                         </li>
-                         <li>
-                            <a class="js-smoothscroll" href="#online"><i class="icon-list-alt"></i><span>Users</span></a>
-                        </li>
-                  
-                         <li>
-                            <a class="js-smoothscroll" href="#process"><i class="icon-list-alt"></i><span>Process</span></a>
-                        </li>
-                        <li>						
+                       <!--  <li>
+                            <a class="js-smoothscroll" href="#refresh-users"><i class="icon-group"></i><span>Users</span></a>
+                        </li> -->
+                        <li>
                             <a class="js-smoothscroll" href="#refresh-ispeed"><i class="icon-exchange"></i><span>Network</span></a>
                         </li>
                         <li class="dropdown">
@@ -209,10 +204,10 @@ cat << EOF
 <i class="icon-#">Total&nbsp;</i> <span  id="ram-total"></span>  <h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $2}' 2>/dev/null`</font></h2>
                                                     </div><!-- .stat -->
                                                     <div class="stat">
-<i class="icon-#">Used&nbsp;</i> <span id="ram-used"></span> <h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $3}' 2>/dev/null `</font></h2><br>                                                    
+<i class="icon-#">Used&nbsp;</i> <span id="ram-used"></span> <h2><font color="#303A34"> `free -h | grep cache | /usr/bin/awk '{print $3}' | head -n 2 | sed 's/free/ /g' 2>/dev/null `</font></h2><br>                                                    
                                                     </div><!-- .stat -->
                                                     <div class="stat">
-<i class="icon-#">Free&nbsp;</i> <span id="ram-free"></span><h2><font color="#303A34"> `free -h | grep Mem | /usr/bin/awk '{print $4}' 2>/dev/null`</font></h2><br>                                                 
+<i class="icon-#">Free&nbsp;</i> <span id="ram-free"></span><h2><font color="#303A34"> `free -h | grep cache | /usr/bin/awk '{print $4}' | head -n 2 | sed 's/shared/ /g' 2>/dev/null`</font></h2><br>                                                 
                                                     </div><!-- .stat -->
                                                 </div>
                                             </div><!-- /widget-content -->
@@ -340,8 +335,13 @@ cat << EOF
                                             <span class="general-data" id="os-info"> `/sbin/runlevel` </span>
                                         </div>
                                         <div class="general-info-item">
+                                            <span class="general-title">Cache RAM</span>
+                                            <span class="general-data" id="os-info"> `free -h | grep Mem | /usr/bin/awk '{print $7}'` </span>
+                                        </div>										
+										
+                                        <div class="general-info-item">
                                             <span class="general-title">Swap Usage</span>
-                                            <span id="os-uptime"> `free -m | awk '/Swap/ { printf("%3.1f%%", $3/$2*100) }'` </span>
+                                            <span id="os-uptime"> `free -m | awk '/Swap/ { printf("%3.1f%%", $3/$2*100) }'` from `free -h | grep Swap | awk '{print $2}'` </span>
                                         </div>
                                      <div class="general-info-item">
                                             <span class="general-title">Total Processes</span>
@@ -350,13 +350,14 @@ cat << EOF
                                         <div class="general-info-item">
                                             <span class="general-title">Boot Services</span>
 <span class="general-data" id="os-info"> `ls /etc/rc2.d/ | grep S | wc -l` / `ls /etc/rc2.d/ | grep -v README | wc -l` </span>											
-                                            <span id="os-hostname"> <pre> `ls /etc/rc2.d/ | grep S | cut -d"S" -f2 | cut -b 3-20` </pre></span>
+                                            <span id="os-hostname"> <pre> `ls /etc/rc2.d/ | grep S | cut -d"S" -f2 | cut -b 3-20 | sort` </pre></span>
                                         </div>
                                     </div>
                                 </div><!-- /widget -->
                             </div> <!-- /span3 -->
 							
-							
+
+
                             <div class="span16">
                                 <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
@@ -490,6 +491,7 @@ cat << EOF
                             </div><!-- /span9 -->
 
 
+
                        <div class="span12">
                                 <div id="process-widget" class="widget widget-table">
                                     <div class="widget-header">
@@ -544,7 +546,9 @@ cat << EOF
                 </div><!-- /container -->
             </div><!-- /footer-inner -->
         </div><!-- /footer -->
-
+		
+		
+		
         <!-- Javascript-->
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="js/jquery.js" type="text/javascript"></script>
