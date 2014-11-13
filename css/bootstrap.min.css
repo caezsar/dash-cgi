@@ -986,7 +986,7 @@ legend+.control-group {
 table {
 	max-width: 100%;
 	border-collapse: collapse;
-	border-spacing: 0;
+	border-spacing: 1;
 	background-color: transparent;
 }
 .table {
@@ -998,7 +998,8 @@ table {
 	line-height: 18px;
 	text-align: left;
 	vertical-align: top;
-	border-top: 1px solid #dddddd;
+	border-top: 2px solid #dddddd;
+    border-left: 2px solid #dddddd;	
 }
 .table th {
 	font-weight: bold;
@@ -1007,13 +1008,13 @@ table {
 	vertical-align: bottom;
 }
 .table colgroup+thead tr:first-child th, .table colgroup+thead tr:first-child td, .table thead:first-child tr:first-child th, .table thead:first-child tr:first-child td {
-	border-top: 0;
+	border-top: 1;
 }
 .table tbody+tbody {
 	border-top: 2px solid #dddddd;
 }
 .table-condensed th, .table-condensed td {
-	padding: 4px 5px;
+	padding: 2px 3px;
 }
 .table-bordered {
 	border: 1px solid #dddddd;
