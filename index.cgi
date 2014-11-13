@@ -1,12 +1,137 @@
 #!/bin/bash
-echo "Content-type: text/html"
+echo ""
 
-bper=`/bin/cat 2>/dev/null /var/log/apache2/tools.tecmint.com-access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
-fper=`/bin/cat 2>/dev/null /var/log/apache2/tools.tecmint.com-access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
-uniq=`cat /var/log/apache2/tools.tecmint.com-access.log | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l`
-eth0_rx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $3, $4}'| cut -d"(" -f2 | cut -d")" -f1`
-eth0_tx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $7, $8}'| cut -d"(" -f2 | cut -d")" -f1`
+bper=`/bin/cat 2>/dev/null /var/log/apache2/access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
+fper=`/bin/cat 2>/dev/null /var/log/apache2/access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
+uniq=`/bin/cat /var/log/apache2/access.log | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l 2>/dev/null`
+hits=`/bin/cat /var/log/apache2/access.log| grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
+eth0_rx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $3, $4}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`
+eth0_tx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $7, $8}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`
+connections=`netstat -tun | /usr/bin/awk '{print $5}' | cut -d: -f1 | grep -v servers | grep -v Address | sort -nr | uniq -c`
 
+disk_info() {
+filesystem=`df -h | awk '{print $1}' | awk 'NR==1'`
+size=`df -h | awk '{print $2}' | awk 'NR==1'`
+avail=`df -h | awk '{print $4}' | awk 'NR==1'`
+percent=`df -h | awk '{print $5}' | awk 'NR==1'`
+mounted=`df -h | awk '{print $6}' | awk 'NR==1'`
+
+echo "<table class="table">"
+echo "  <tr>"
+echo "    <td><h4>`echo $filesystem`</h4></td>"
+echo "    <td><h4>`echo $size`</h4></td>"	
+echo "    <td><h4>`echo $avail`</h4></td>"
+echo "    <td><h4>`echo $percent`</h4></td>"
+echo "    <td><h4>`echo $mounted`</h4></td>"
+echo "    <td><h4>Type</h4></td>"	
+echo " </tr>"
+ 
+for i in `mount | grep "^/" | awk '{print $3}'`; do
+echo "  <tr>"
+first=`df -h $i  | awk '{print $1}' | awk 'NR==2'`
+sec=`df -h $i  | awk '{print $2}' | awk 'NR==2'`
+th=`df -h $i  | awk '{print $4}' | awk 'NR==2'`
+four=`df -h $i  | awk '{print $5}' | awk 'NR==2'`
+five=`df -h $i  | awk '{print $6}' | awk 'NR==2'`
+six=`df -T $i | awk '{print $2}' | grep -v "Type"`
+
+echo "	  <td>`echo $first`</td>"
+echo "    <td>`echo $sec`</td>"		
+echo "    <td>`echo $th`</td>"
+echo "    <td>`echo $four`</td>"
+echo "    <td>`echo $five`</td>"
+echo "    <td>`echo $six`</td>"
+echo "  </tr>"
+done
+
+echo "</table>"
+}
+
+
+servers() {
+result=`/bin/netstat -tuln | grep -v "Active" | grep -v "Proto" | awk '{print $1,$4,$5,$6}' | sed 's/\ /      /g'`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+	echo "</font></h5></pre> </table>"
+}		
+
+users_online() {
+result=`who`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+	echo "</pre> </table>"
+}
+
+ip() {
+
+echo "<table class="table">"
+echo " <tr>"
+echo "    <td><strong>Interface</strong></td>"
+echo "    <td><strong>IP</td></strong>"	
+echo " </tr>"
+ 
+for i in `/sbin/ifconfig -a | cut -d" " -f1`; do
+echo "  <tr>"
+echo "	  <td>`/sbin/ifconfig $i | /usr/bin/awk '{print $1}' | awk 'NR==1'` </td>"
+echo "	  <td>`/sbin/ifconfig $i | grep inet | /usr/bin/awk '{print $2}' | /usr/bin/cut -d: -f2` </td>"
+echo "  </tr>"
+done
+echo "</table>"
+}
+
+
+traffic() {
+
+echo "<table class="table">"
+echo " <tr>"
+echo "    <td><strong>Interface</strong></td>"
+echo "    <td><strong>UP</strong></td>"	
+echo "    <td><strong>Down</strong></td>"	
+echo " </tr>"
+ 
+for i in `/sbin/ifconfig | cut -d" " -f1`; do
+echo "  <tr>"
+echo "	  <td>`/sbin/ifconfig $i | /usr/bin/awk '{print $1}' | awk 'NR==1'` </td>"
+echo "	  <td>`/sbin/ifconfig $i| grep "RX bytes" | head -1 | /usr/bin/awk '{print $3, $4}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null` </td>"
+echo "	  <td>`/sbin/ifconfig $i| grep "RX bytes" | head -1 | /usr/bin/awk '{print $7, $8}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`	</td>"
+echo "  </tr>"
+done
+echo "</table>"
+}
+
+
+
+last_logins() {
+result=`last -i`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+	echo "</pre> </table>"
+}
+
+net_conn() {
+result=`netstat -tun | /usr/bin/awk '{print $1,$5,$6}' | sort -nr | grep -v "servers" | grep -v "Address" | uniq -c | sed 's/\ / --> /g'| /usr/bin/awk '{print $7,$9,$10,$11,$12,$13}' | sort -nr | uniq 2>/dev/null`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+	echo "</pre> </table>"
+}
+
+process() {
+result=`ps aux`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+	echo "</pre> </table>"
+}
+	  
 cat << EOF
 
 <!DOCTYPE html>
@@ -14,7 +139,7 @@ cat << EOF
     <head>
         <title>linux-dash : Server Monitoring Web Dashboard on `hostname -f` </title>
        <!-- <meta http-equiv="refresh" content="5" /> -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Monitor your Linux server through a simple web dashboard. Open source and free!">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
@@ -41,46 +166,47 @@ cat << EOF
 
                 <ul class="nav pull-right">
                             <li>
-                      <a target="_blank" href="http://tools.tecmint.com/m">
+                      <a target="_blank" href="/">
                       <i class="lead icon-home"></i>
                     <span class="lead">Go Home</span>
                     </a>
                             </li>
 
                             <li>
-                      <a target="_blank" href="../logs.cgi">
-                      <i class="lead icon-info"></i>
-                    <span class="lead">Logs</span>
+                      <a target="_blank" href="https://github.com/caezsar/dash-cgi/">
+                      <i class="lead icon-github"></i>
+                    <span class="lead">GitHub</span>
                     </a>
                             </li>
 
-                            <li>
-                      <a target="_blank" href="../logwatch.cgi">
+                        <!--    <li>
+                      <a target="_blank" href="link_2">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Logwatch</span>
+                    <span class="lead">Link2</span>
                     </a>
                             </li>
 
 
                             <li>
-                      <a target="_blank" href="../webalizer/index.html">
+                      <a target="_blank" href="link3.html">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Webalizer</span>
+                    <span class="lead">Link3</span>
                     </a>
                             </li>
+							
                             <li>
-                      <a target="_blank" href="../info.cgi">
+                      <a target="_blank" href="link4.cgi">
                       <i class="lead icon-info"></i>
-                    <span class="lead">Info</span>
+                    <span class="lead">Link4</span>
                     </a>
-                            </li>
+                            </li> -->
                         </ul>
 					</div>
                 </div>
             </div>
         </div>
-
-
+		
+		
      <div class="subnavbar">
             <div class="subnavbar-inner">
 
@@ -105,10 +231,14 @@ cat << EOF
                         <li>
                             <a class="js-smoothscroll" href="#refresh-ram"><i class="icon-list-alt"></i><span>RAM</span></a>
                         </li>
-                       <!--  <li>
-                            <a class="js-smoothscroll" href="#refresh-users"><i class="icon-group"></i><span>Users</span></a>
-                        </li> -->
-                        <li>
+                         <li>
+                            <a class="js-smoothscroll" href="#online"><i class="icon-list-alt"></i><span>Users</span></a>
+                        </li>
+                  
+                         <li>
+                            <a class="js-smoothscroll" href="#process"><i class="icon-list-alt"></i><span>Process</span></a>
+                        </li>
+                        <li>						
                             <a class="js-smoothscroll" href="#refresh-ispeed"><i class="icon-exchange"></i><span>Network</span></a>
                         </li>
                         <li class="dropdown">
@@ -249,57 +379,6 @@ cat << EOF
                         </div> <!-- /span4 -->
 
 						
-							<div class="span6">
-                                <div id="arp-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-list"></i>
-                                        <h3>
-                                            I/O Stats
-                                        </h3>
-                                        <div id="refresh-arp" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-										<div class="widget-content"><p> </p>
-<table id="arp_dashboard" class="table table-hover table-condensed table-bordered"><pre><h5><font color="#303A34"> `iostat -hm 2>/dev/null` </font></h5></pre></table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span6 -->
-
-							
-
-							<div class="span6">
-                                <div id="disk-usage-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-list"></i>
-                                        <h3>
-                                            Disk Usage
-                                        </h3>
-                                        <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-<table id="df_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h4><font color="#303A34"> `df -h 2>/dev/null` </font></h4></pre> </table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span6 -->
-							
-							
-
-						<div class="span3">
-                            <div id="ip-widget" class="widget widget-table">
-                                <div class="widget-header">
-                                    <i class="icon-monitor"></i>
-                                    <h3>
-                                        Apache Unique
-                                    </h3>
-                                    <div id="refresh-ip" class="btn icon-refresh js-refresh-info"></div>
-                                </div><!-- /widget-header -->
-                                <div class="widget-content"><p> </p>
-<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> `echo $bper` - `echo $fper 2>/dev/null` </font></h4></pre></table>								
-<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Uniq Visitors: `echo $uniq 2>/dev/null` </font></h4></pre></table>
-                                </div><!-- /widget-content -->
-                            </div><!-- /widget -->
-                        </div><!-- /span3 --> 
-						
-						
 
                         <div class="span3">
                             <div id="ip-widget" class="widget widget-table">
@@ -312,12 +391,49 @@ cat << EOF
                                 </div><!-- /widget-header -->
                                 <div class="widget-content"><p> </p>
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> External: ` wget -qO- http://ipecho.net/plain ; echo 2 >/dev/null` </font></h4></pre></table>								
-<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Server: `echo $SERVER_ADDR` </font></h4></pre></table>
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Remote: `echo $REMOTE_ADDR` </font></h4></pre></table>
+				`ip`
                                 </div><!-- /widget-content -->
                             </div><!-- /widget -->
                         </div><!-- /span3 --> 
 												
+												
+
+			<div class="span3">
+                            <div id="ip-widget" class="widget widget-table">
+                                <div class="widget-header">
+                                    <i class="icon-monitor"></i>
+                                    <h3>
+                                        Apache Unique
+                                    </h3>
+                                    <div id="refresh-ip" class="btn icon-refresh js-refresh-info"></div>
+                                </div><!-- /widget-header -->
+                                <div class="widget-content"><p> </p>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> `echo $bper` - `echo $fper 2>/dev/null` </font></h4></pre></table>								
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Uniq Visitors: `echo $uniq 2>/dev/null` </font></h4></pre></table>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Hits: `echo $hits 2>/dev/null` </font></h4></pre></table>
+                               </div><!-- /widget-content -->
+                            </div><!-- /widget -->
+                        </div><!-- /span3 --> 
+
+						
+
+			<div class="span6">
+                                <div id="disk-usage-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-list"></i>
+                                        <h3>
+                                            Disk Usage
+                                        </h3>
+                                        <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+				`disk_info`
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->
+							
+
 
 
                        <div class="span3">
@@ -355,44 +471,42 @@ cat << EOF
                                     </div>
                                 </div><!-- /widget -->
                             </div> <!-- /span3 -->
+
+
+
+			<div class="span3">
+                                <div id="disk-usage-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-list"></i>
+                                        <h3>
+                                            Traffic
+                                        </h3>
+                                        <div id="traffici" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+							`traffic`
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->	
+
 							
-
-
-                            <div class="span16">
+                            <div class="span14">
                                 <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-dashboard"></i>
                                         <h3>
-                                            Network Connections
+                                            Network Servers
                                         </h3>
                                         <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `netstat -tun | /usr/bin/awk '{print $1,$5,$6}' | sort -nr | grep -v "servers" | grep -v "Address" | uniq -c | sed 's/\ / --> /g'| /usr/bin/awk '{print $7,$9,$10,$11,$12,$13}' | sort -nr | uniq 2>/dev/null` </font></h5></pre> </table>
+				`servers`
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
-
-
-
-							<div class="span4">
-                                <div id="users-widget" class="widget widget-table action-table">
-                                    <div class="widget-header">
-                                        <i class="icon-group"></i>
-                                        <h3>
-                                            CPU Info
-                                        </h3>
-                                        <div id="refresh-users" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-<table id="cpu" class="table table-hover table-bordered table-condensed"><pre><h5><font color="#303A34"> `lscpu 2>/dev/null` </font></h5></pre> </table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span4 -->
-
-
 							
-							<div class="span4">
+
+			<div class="span4">
                                 <div id="bandwidth-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-exchange"></i>
@@ -407,24 +521,12 @@ cat << EOF
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span4 -->
-				
+							
 
-                            <div class="span14">
-                                <div id="swap-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-dashboard"></i>
-                                        <h3>
-                                            Network Servers
-                                        </h3>
-                                        <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `netstat -tuln 2>/dev/null` </font></h5></pre> </table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span9 -->
+					
 
-                        <div class="span16">
+							
+                       <div class="span16">
                             <div id="memcached-widget" class="widget widget-nopad">
                                 <div class="widget-header">
                                     <i class="icon-list-alt"></i>
@@ -435,14 +537,63 @@ cat << EOF
                                 </div><!-- /widget-header -->
                                 <div class="widget-content">
                                     <div class="big-stats-container"><p> </p>
-                                        <pre><h5><font color="#303A34"> `w -s` </font></h5></pre>
+                                    `users_online`
                                     </div>
                                 </div>
                             </div>
                         </div> <!-- /span6 -->
 						
+						
+
+			<div class="span6">
+                                <div id="arp-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-list"></i>
+                                        <h3>
+                                            I/O Stats
+                                        </h3>
+                                        <div id="refresh-arp" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+					<div class="widget-content"><p> </p>
+<table id="arp_dashboard" class="table table-hover table-condensed table-bordered"><pre><h5><font color="#303A34"> `iostat -hm 2>/dev/null` </font></h5></pre></table>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->
+
 							
-							<div class="span17">
+                            <div class="span16">
+                                <div id="swap-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-dashboard"></i>
+                                        <h3>
+                                            Network Connections
+                                        </h3>
+                                        <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+								`net_conn`
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span9 -->
+                            
+
+			<div class="span4">
+                                <div id="users-widget" class="widget widget-table action-table">
+                                    <div class="widget-header">
+                                        <i class="icon-group"></i>
+                                        <h3>
+                                            CPU Info
+                                        </h3>
+                                        <div id="refresh-users" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+<table id="cpu" class="table table-hover table-bordered table-condensed"><pre><h5><font color="#303A34"> `lscpu 2>/dev/null` </font></h5></pre> </table>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span4 -->
+
+				
+			<div class="span17">
                                 <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-dashboard"></i>
@@ -452,14 +603,14 @@ cat << EOF
                                         <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `last -i 2>/dev/null` </font></h5></pre> </table>
+								`last_logins`
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
 							
 							
 			
-					   <div class="span6">
+			<div class="span6">
                                 <div id="software-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-list"></i>
@@ -491,7 +642,6 @@ cat << EOF
                             </div><!-- /span9 -->
 
 
-
                        <div class="span12">
                                 <div id="process-widget" class="widget widget-table">
                                     <div class="widget-header">
@@ -505,7 +655,7 @@ cat << EOF
                                         </div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-<table id="ps_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `ps axu 2>/dev/null` </font></h5></pre> </table>
+<table id="ps_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `process` </font></h5></pre> </table>
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span12 -->
@@ -546,9 +696,7 @@ cat << EOF
                 </div><!-- /container -->
             </div><!-- /footer-inner -->
         </div><!-- /footer -->
-		
-		
-		
+
         <!-- Javascript-->
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="js/jquery.js" type="text/javascript"></script>
