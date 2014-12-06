@@ -1,8 +1,7 @@
 #!/bin/bash
 echo "Content-type: text/html"
 
-VHOST_PATTERN="tools.tecmint.com"
-APACHE_ACCESS_LOG_FILE="/var/log/apache2/tools.tecmint.com-access.log"
+APACHE_ACCESS_LOG_FILE="/var/log/apache2/vhosts_log_file.log"
 
 
 bper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
@@ -132,120 +131,6 @@ echo "	  <td>`/sbin/ifconfig $i| grep "RX bytes" | head -1 | /usr/bin/awk '{prin
 echo "  </tr>"
 done
 echo "</table>"
-}
-
-no_gzip_logs() {
-echo "<table class="table">"
-echo " <tr>"
-echo "<td><strong> Log Start Date </strong></td>"
-echo "<td><strong> End Date </strong></td>"		
-echo "<td><strong> Uniq IP </strong></td>"
-echo "<td><strong> Total Hits </strong></td>"
-echo "  </tr>"
-
-for i in `ls /var/log/apache2/ | grep $VHOST_PATTERN | grep -v error | grep -v gz`; do
-
-start_date=`/bin/cat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
-end_date=`/bin/cat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
-uniq_ip=`cat /var/log/apache2/$i | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
-hits=`/bin/cat /var/log/apache2/$i| grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
-
-echo "<table class="table">"
-echo " <tr>"
-echo "	  <td>`echo $start_date`</td>"
-echo "    <td>`echo $end_date`</td>"		
-echo "    <td>`echo $uniq_ip`</td>"
-echo "    <td>`echo $hits`</td>"
-echo "  </tr>"
-
-echo "</table>"
-
-done
-}
-
-gzip_logs() {
-for i in `ls /var/log/apache2/ | grep $VHOST_PATTERN | grep -v error | grep gz`; do
-
-start_date=`/bin/zcat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
-end_date=`/bin/zcat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
-uniq_ip=`zcat /var/log/apache2/$i | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
-hits=`/bin/zcat /var/log/apache2/$i| grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
-#echo
-#printf "Period: $start_date - $end_date   Uniq: $uniq_ip   Total Hits: $hits  "
-#echo
-echo "<table class="table">"
-echo " <tr>"
-echo "	  <td>`echo $start_date`</td>"
-echo "    <td>`echo $end_date`</td>"		
-echo "    <td>`echo $uniq_ip`</td>"
-echo "    <td>`echo $hits`</td>"
-echo "  </tr>"
-
-echo "</table>"
-done
-}
-
-
-total_gip() {
-cd /var/log/apache2/
-string=`ls | grep $VHOST_PATTERN | grep -v error | grep gz | xargs echo -n`
-uniq_ip=`zcat $string | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
-echo $uniq_ip
-}
-
-total_ip() {
-cd /var/log/apache2/
-string=`ls | grep $VHOST_PATTERN | grep -v error | grep -v gz | xargs echo -n`
-uniq_ip=`cat $string | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
-echo $uniq_ip
-}
-
-total_ips() {
-echo "`total_gip` + `total_ip`" | bc
-}
-
-
-total_ghits() {
-cd /var/log/apache2/
-
-string=`ls | grep $VHOST_PATTERN | grep -v error | grep gz | xargs echo -n`
-uniq_hits=`/bin/zcat /var/log/apache2/$string | grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l`
-echo $uniq_hits
-}
-
-total_hits() {
-cd /var/log/apache2/
-string=`ls | grep $VHOST_PATTERN | grep -v error | grep -v gz | xargs echo -n`
-uniq_hits=`/bin/cat /var/log/apache2/$string | grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l`
-echo $uniq_hits
-}
-
-total_apache_hits() {
-echo "`total_ghits` + `total_hits`" | bc
-}
-
-hack_tries() {
-cat $APACHE_ACCESS_LOG_FILE | grep HEAD | grep fckeditor | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
-}
-
-hack_tries1() {
-cat $APACHE_ACCESS_LOG_FILE | grep GET | grep phpmyadmin | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
-}
-
-hack_tries2() {
-cat $APACHE_ACCESS_LOG_FILE | grep GET | grep HNAP1 | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
-}
-
-hack_proxy() {
-cat $APACHE_ACCESS_LOG_FILE | grep "GET http://" | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
-}
-
-hack_xml() {
-cat $APACHE_ACCESS_LOG_FILE | grep "xmlrpc.php" | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
-}
-
-hack_ckfinder() {
-cat $APACHE_ACCESS_LOG_FILE | grep "ckfinder" | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
 }
 
 
@@ -557,21 +442,6 @@ cat << EOF
 							
 
 
-							<div class="span6">
-                                <div id="disk-usage-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-list"></i>
-                                        <h3>
-                                            Apache Log Statistics
-                                        </h3>
-                                        <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-									`no_gzip_logs`
-									`gzip_logs`
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span6 -->
 																					
 
                        <div class="span3">
@@ -644,28 +514,7 @@ cat << EOF
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
 							
-							
-	                       <div class="span16">
-                            <div id="memcached-widget" class="widget widget-nopad">
-                                <div class="widget-header">
-                                    <i class="icon-list-alt"></i>
-                                    <h3>
-                                        Hackers IPs
-                                    </h3>
-                                    <div id="online" class="btn icon-refresh js-refresh-info"></div>
-                                </div><!-- /widget-header -->
-                                <div class="widget-content">
-                                    <div class="big-stats-container"><p> </p>
-					<pre>`hack_tries`</pre>
-					<pre>`hack_tries1`</pre>
-					<pre>`hack_tries2`</pre>
-					<pre>`hack_proxy`</pre>
-					<pre>`hack_xml`</pre>	
-					<pre>`hack_ckfinder`</pre>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> <!-- /span6 -->							
+						
 							
 							
                             <div class="span16">
