@@ -1,9 +1,9 @@
 #!/bin/bash
 echo "Content-type: text/html"
 
-APACHE_ACCESS_LOG_FILE="/var/log/apache2/vhosts_log_file.log"
+APACHE_ACCESS_LOG_FILE="/var/log/apache2/vhost_access.log"
 traffic_interface="eth0"
-#traffic_interface1="lo"
+
 
 bper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
 fper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
@@ -132,6 +132,13 @@ echo "	  <td>`/sbin/ifconfig $i| grep "RX bytes" | head -1 | /usr/bin/awk '{prin
 echo "  </tr>"
 done
 echo "</table>"
+}
+
+traffic_info() {
+
+for i in `/sbin/ifconfig | grep -v "lo" | cut -d" " -f1`; do
+echo "<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `vnstat -i $i` </font></h5></pre> </table>"
+done
 }
 
 
@@ -640,8 +647,7 @@ cat << EOF
                                         <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `vnstat -i $traffic_interface 2>/dev/null`  </font></h5></pre> </table>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `vnstat -i $traffic_interface1 2>/dev/null`  </font></h5></pre> </table>            
+					`traffic_info`
 			</div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
