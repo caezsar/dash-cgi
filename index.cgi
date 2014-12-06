@@ -416,8 +416,8 @@ cat << EOF
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> `echo $bper` - `echo $fper 2>/dev/null` </font></h4></pre></table>								
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Uniq Visitors: `echo $uniq 2>/dev/null` </font></h4></pre></table>
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Hits: `echo $hits 2>/dev/null` </font></h4></pre></table>
-<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Apache Logs Space: `du -sh /var/log/apache2 | awk '{print $1}'` </font></h4></pre></table>
-<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Logs Space: `du -sh /var/log | awk '{print $1}'` </font></h4></pre></table>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Apache Logs Usage: `du -sh /var/log/apache2 | awk '{print $1}'` </font></h4></pre></table>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Logs Usage: `du -sh /var/log | awk '{print $1}'` </font></h4></pre></table>
 
                              </div><!-- /widget-content -->
                             </div><!-- /widget -->
