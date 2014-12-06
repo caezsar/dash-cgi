@@ -1,10 +1,14 @@
 #!/bin/bash
-echo ""
+echo "Content-type: text/html"
 
-bper=`/bin/cat 2>/dev/null /var/log/apache2/access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
-fper=`/bin/cat 2>/dev/null /var/log/apache2/access.log | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
-uniq=`/bin/cat /var/log/apache2/access.log | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l 2>/dev/null`
-hits=`/bin/cat /var/log/apache2/access.log| grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
+VHOST_PATTERN="tools.tecmint.com"
+APACHE_ACCESS_LOG_FILE="/var/log/apache2/tools.tecmint.com-access.log"
+
+
+bper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
+fper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
+uniq=`cat $APACHE_ACCESS_LOG_FILE | /usr/bin/awk '{print $1}'| sort | uniq -c |wc -l`
+hits=`/bin/cat $APACHE_ACCESS_LOG_FILE | grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
 eth0_rx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $3, $4}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`
 eth0_tx=`/sbin/ifconfig | grep "RX bytes" | head -1 | /usr/bin/awk '{print $7, $8}'| cut -d"(" -f2 | cut -d")" -f1 2>/dev/null`
 connections=`netstat -tun | /usr/bin/awk '{print $5}' | cut -d: -f1 | grep -v servers | grep -v Address | sort -nr | uniq -c`
@@ -49,12 +53,12 @@ echo "</table>"
 
 
 servers() {
-result=`/bin/netstat -tuln | grep -v "Active" | grep -v "Proto" | awk '{print $1,$4,$5,$6}' | sed 's/\ /      /g'`
+result=`/bin/netstat -tuln | grep -v "Active" | grep -v "Proto" | awk '{print $1,$4,$6}' | sed 's/\ /      /g'`
         while read -r line; do
         echo  "<table>"
         echo "<pre><strong> $line</strong>"
         done <<< "$result"               
-	echo "</font></h5></pre> </table>"
+		echo "</font></h5></pre> </table>"
 }		
 
 users_online() {
@@ -63,7 +67,7 @@ result=`who`
         echo  "<table>"
         echo "<pre><strong> $line</strong>"
         done <<< "$result"               
-	echo "</pre> </table>"
+		echo "</pre> </table>"
 }
 
 ip() {
@@ -81,6 +85,33 @@ echo "	  <td>`/sbin/ifconfig $i | grep inet | /usr/bin/awk '{print $2}' | /usr/b
 echo "  </tr>"
 done
 echo "</table>"
+}
+
+last_logins() {
+result=`last -i`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+		echo "</pre> </table>"
+}
+
+net_conn() {
+result=`netstat -tun | /usr/bin/awk '{print $1,$5,$6}' | sort -nr | grep -v "servers" | grep -v "Address" | uniq -c | sed 's/\ / --> /g'| /usr/bin/awk '{print $7,$9,$10,$11,$12,$13}' | sort -nr | uniq 2>/dev/null`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+		echo "</pre> </table>"
+}
+
+process() {
+result=`ps aux`
+        while read -r line; do
+        echo  "<table>"
+        echo "<pre><strong> $line</strong>"
+        done <<< "$result"               
+		echo "</pre> </table>"
 }
 
 
@@ -103,34 +134,121 @@ done
 echo "</table>"
 }
 
+no_gzip_logs() {
+echo "<table class="table">"
+echo " <tr>"
+echo "<td><strong> Log Start Date </strong></td>"
+echo "<td><strong> End Date </strong></td>"		
+echo "<td><strong> Uniq IP </strong></td>"
+echo "<td><strong> Total Hits </strong></td>"
+echo "  </tr>"
 
+for i in `ls /var/log/apache2/ | grep $VHOST_PATTERN | grep -v error | grep -v gz`; do
 
-last_logins() {
-result=`last -i`
-        while read -r line; do
-        echo  "<table>"
-        echo "<pre><strong> $line</strong>"
-        done <<< "$result"               
-	echo "</pre> </table>"
+start_date=`/bin/cat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
+end_date=`/bin/cat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
+uniq_ip=`cat /var/log/apache2/$i | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
+hits=`/bin/cat /var/log/apache2/$i| grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
+
+echo "<table class="table">"
+echo " <tr>"
+echo "	  <td>`echo $start_date`</td>"
+echo "    <td>`echo $end_date`</td>"		
+echo "    <td>`echo $uniq_ip`</td>"
+echo "    <td>`echo $hits`</td>"
+echo "  </tr>"
+
+echo "</table>"
+
+done
 }
 
-net_conn() {
-result=`netstat -tun | /usr/bin/awk '{print $1,$5,$6}' | sort -nr | grep -v "servers" | grep -v "Address" | uniq -c | sed 's/\ / --> /g'| /usr/bin/awk '{print $7,$9,$10,$11,$12,$13}' | sort -nr | uniq 2>/dev/null`
-        while read -r line; do
-        echo  "<table>"
-        echo "<pre><strong> $line</strong>"
-        done <<< "$result"               
-	echo "</pre> </table>"
+gzip_logs() {
+for i in `ls /var/log/apache2/ | grep $VHOST_PATTERN | grep -v error | grep gz`; do
+
+start_date=`/bin/zcat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
+end_date=`/bin/zcat 2>/dev/null /var/log/apache2/$i | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1`
+uniq_ip=`zcat /var/log/apache2/$i | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
+hits=`/bin/zcat /var/log/apache2/$i| grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l 2>/dev/null`
+#echo
+#printf "Period: $start_date - $end_date   Uniq: $uniq_ip   Total Hits: $hits  "
+#echo
+echo "<table class="table">"
+echo " <tr>"
+echo "	  <td>`echo $start_date`</td>"
+echo "    <td>`echo $end_date`</td>"		
+echo "    <td>`echo $uniq_ip`</td>"
+echo "    <td>`echo $hits`</td>"
+echo "  </tr>"
+
+echo "</table>"
+done
 }
 
-process() {
-result=`ps aux`
-        while read -r line; do
-        echo  "<table>"
-        echo "<pre><strong> $line</strong>"
-        done <<< "$result"               
-	echo "</pre> </table>"
+
+total_gip() {
+cd /var/log/apache2/
+string=`ls | grep $VHOST_PATTERN | grep -v error | grep gz | xargs echo -n`
+uniq_ip=`zcat $string | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
+echo $uniq_ip
 }
+
+total_ip() {
+cd /var/log/apache2/
+string=`ls | grep $VHOST_PATTERN | grep -v error | grep -v gz | xargs echo -n`
+uniq_ip=`cat $string | grep -v "internal dummy connection" | cut -d" " -f1 | sort -nr | uniq -c | wc -l`
+echo $uniq_ip
+}
+
+total_ips() {
+echo "`total_gip` + `total_ip`" | bc
+}
+
+
+total_ghits() {
+cd /var/log/apache2/
+
+string=`ls | grep $VHOST_PATTERN | grep -v error | grep gz | xargs echo -n`
+uniq_hits=`/bin/zcat /var/log/apache2/$string | grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l`
+echo $uniq_hits
+}
+
+total_hits() {
+cd /var/log/apache2/
+string=`ls | grep $VHOST_PATTERN | grep -v error | grep -v gz | xargs echo -n`
+uniq_hits=`/bin/cat /var/log/apache2/$string | grep -v "::1" | /usr/bin/awk '{print $1}' | sort | wc -l`
+echo $uniq_hits
+}
+
+total_apache_hits() {
+echo "`total_ghits` + `total_hits`" | bc
+}
+
+hack_tries() {
+cat $APACHE_ACCESS_LOG_FILE | grep HEAD | grep fckeditor | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
+}
+
+hack_tries1() {
+cat $APACHE_ACCESS_LOG_FILE | grep GET | grep phpmyadmin | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
+}
+
+hack_tries2() {
+cat $APACHE_ACCESS_LOG_FILE | grep GET | grep HNAP1 | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
+}
+
+hack_proxy() {
+cat $APACHE_ACCESS_LOG_FILE | grep "GET http://" | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
+}
+
+hack_xml() {
+cat $APACHE_ACCESS_LOG_FILE | grep "xmlrpc.php" | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
+}
+
+hack_ckfinder() {
+cat $APACHE_ACCESS_LOG_FILE | grep "ckfinder" | awk '{print $1, $4}' | cut -d: -f1| sed 's/\[/\ /g' | uniq -c | sort -nr
+}
+
+
 	  
 cat << EOF
 
@@ -392,14 +510,14 @@ cat << EOF
                                 <div class="widget-content"><p> </p>
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> External: ` wget -qO- http://ipecho.net/plain ; echo 2 >/dev/null` </font></h4></pre></table>								
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Remote: `echo $REMOTE_ADDR` </font></h4></pre></table>
-				`ip`
+										`ip`
                                 </div><!-- /widget-content -->
                             </div><!-- /widget -->
                         </div><!-- /span3 --> 
 												
 												
 
-			<div class="span3">
+						<div class="span3">
                             <div id="ip-widget" class="widget widget-table">
                                 <div class="widget-header">
                                     <i class="icon-monitor"></i>
@@ -412,13 +530,17 @@ cat << EOF
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> `echo $bper` - `echo $fper 2>/dev/null` </font></h4></pre></table>								
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Uniq Visitors: `echo $uniq 2>/dev/null` </font></h4></pre></table>
 <table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Hits: `echo $hits 2>/dev/null` </font></h4></pre></table>
-                               </div><!-- /widget-content -->
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Server IPs: `total_ips` </font></h4></pre></table>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Server Hits: `total_apache_hits` </font></h4></pre></table>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Apache Logs Space: `du -sh /var/log/apache2 | awk '{print $1}'` </font></h4></pre></table>
+<table id="ip_dashboard" class="table table-hover table-condensed table-bordered"><pre><h4><font color="#303A34"> Total Logs Space: `du -sh /var/log | awk '{print $1}'` </font></h4></pre></table>
+
+                             </div><!-- /widget-content -->
                             </div><!-- /widget -->
                         </div><!-- /span3 --> 
+					
 
-						
-
-			<div class="span6">
+							<div class="span6">
                                 <div id="disk-usage-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-list"></i>
@@ -428,13 +550,29 @@ cat << EOF
                                         <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-				`disk_info`
+							`disk_info`
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span6 -->
 							
 
 
+							<div class="span6">
+                                <div id="disk-usage-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-list"></i>
+                                        <h3>
+                                            Apache Log Statistics
+                                        </h3>
+                                        <div id="refresh-df" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content"><p> </p>
+									`no_gzip_logs`
+									`gzip_logs`
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->
+																					
 
                        <div class="span3">
                                 <div id="general-info-widget" class="widget widget-table action-table">
@@ -474,7 +612,8 @@ cat << EOF
 
 
 
-			<div class="span3">
+						
+							<div class="span3">
                                 <div id="disk-usage-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-list"></i>
@@ -495,37 +634,56 @@ cat << EOF
                                     <div class="widget-header">
                                         <i class="icon-dashboard"></i>
                                         <h3>
-                                            Network Servers
+                                            Servers
                                         </h3>
                                         <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
-				`servers`
+							`servers`
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
 							
-
-			<div class="span4">
-                                <div id="bandwidth-widget" class="widget widget-table">
+							
+	                       <div class="span16">
+                            <div id="memcached-widget" class="widget widget-nopad">
+                                <div class="widget-header">
+                                    <i class="icon-list-alt"></i>
+                                    <h3>
+                                        Hackers IPs
+                                    </h3>
+                                    <div id="online" class="btn icon-refresh js-refresh-info"></div>
+                                </div><!-- /widget-header -->
+                                <div class="widget-content">
+                                    <div class="big-stats-container"><p> </p>
+					<pre>`hack_tries`</pre>
+					<pre>`hack_tries1`</pre>
+					<pre>`hack_tries2`</pre>
+					<pre>`hack_proxy`</pre>
+					<pre>`hack_xml`</pre>	
+					<pre>`hack_ckfinder`</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- /span6 -->							
+							
+							
+                            <div class="span16">
+                                <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
-                                        <i class="icon-exchange"></i>
+                                        <i class="icon-dashboard"></i>
                                         <h3>
-                                            Bandwidth
+                                            Network Connections
                                         </h3>
+                                        <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
                                     </div><!-- /widget-header -->
-                                    <div class="widget-content">
-                                        <div style="padding:10px;text-align:center;">
-<i style="color:#19bc9c; font:20px/2em 'Open Sans',sans-serif;" class="icon-#" >eth0:</i>&nbsp; <h4><font color="#303A34"> RX: <span> `echo $eth0_rx 2>/dev/null` </span>&nbsp;&nbsp;|&nbsp;&nbsp; TX: <span> `echo $eth0_tx 2>/dev/null` </span></h4></font> 
-                                        </div>
+                                    <div class="widget-content"><p> </p>
+								`net_conn`
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
-                            </div><!-- /span4 -->
-							
+                            </div><!-- /span9 -->
 
-					
-
-							
+						
                        <div class="span16">
                             <div id="memcached-widget" class="widget widget-nopad">
                                 <div class="widget-header">
@@ -544,40 +702,7 @@ cat << EOF
                         </div> <!-- /span6 -->
 						
 						
-
-			<div class="span6">
-                                <div id="arp-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-list"></i>
-                                        <h3>
-                                            I/O Stats
-                                        </h3>
-                                        <div id="refresh-arp" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-					<div class="widget-content"><p> </p>
-<table id="arp_dashboard" class="table table-hover table-condensed table-bordered"><pre><h5><font color="#303A34"> `iostat -hm 2>/dev/null` </font></h5></pre></table>
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span6 -->
-
-							
-                            <div class="span16">
-                                <div id="swap-widget" class="widget widget-table">
-                                    <div class="widget-header">
-                                        <i class="icon-dashboard"></i>
-                                        <h3>
-                                            Network Connections
-                                        </h3>
-                                        <div id="refresh-swap" class="btn icon-refresh js-refresh-info"></div>
-                                    </div><!-- /widget-header -->
-                                    <div class="widget-content"><p> </p>
-								`net_conn`
-                                    </div><!-- /widget-content -->
-                                </div><!-- /widget -->
-                            </div><!-- /span9 -->
-                            
-
-			<div class="span4">
+							<div class="span4">
                                 <div id="users-widget" class="widget widget-table action-table">
                                     <div class="widget-header">
                                         <i class="icon-group"></i>
@@ -593,7 +718,7 @@ cat << EOF
                             </div><!-- /span4 -->
 
 				
-			<div class="span17">
+							<div class="span17">
                                 <div id="swap-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-dashboard"></i>
@@ -607,10 +732,42 @@ cat << EOF
                                     </div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
+
+
+						<div class="span6">
+                                <div id="arp-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-list"></i>
+                                        <h3>
+                                            I/O Stats
+                                        </h3>
+                                        <div id="refresh-arp" class="btn icon-refresh js-refresh-info"></div>
+                                    </div><!-- /widget-header -->
+										<div class="widget-content"><p> </p>
+<table id="arp_dashboard" class="table table-hover table-condensed table-bordered"><pre><h5><font color="#303A34"> `iostat -hm 2>/dev/null` </font></h5></pre></table>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span6 -->
 							
 							
-			
-			<div class="span6">
+							<div class="span4">
+                                <div id="bandwidth-widget" class="widget widget-table">
+                                    <div class="widget-header">
+                                        <i class="icon-exchange"></i>
+                                        <h3>
+                                            Bandwidth
+                                        </h3>
+                                    </div><!-- /widget-header -->
+                                    <div class="widget-content">
+                                        <div style="padding:10px;text-align:center;">
+<i style="color:#19bc9c; font:20px/2em 'Open Sans',sans-serif;" class="icon-#" >eth0:</i>&nbsp; <h4><font color="#303A34"> RX: <span> `echo $eth0_rx 2>/dev/null` </span>&nbsp;&nbsp;|&nbsp;&nbsp; TX: <span> `echo $eth0_tx 2>/dev/null` </span></h4></font> 
+                                        </div>
+                                    </div><!-- /widget-content -->
+                                </div><!-- /widget -->
+                            </div><!-- /span4 -->
+							
+
+					   <div class="span6">
                                 <div id="software-widget" class="widget widget-table">
                                     <div class="widget-header">
                                         <i class="icon-list"></i>
