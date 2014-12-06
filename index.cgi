@@ -3,7 +3,7 @@ echo "Content-type: text/html"
 
 APACHE_ACCESS_LOG_FILE="/var/log/apache2/vhosts_log_file.log"
 traffic_interface="eth0"
-#traffic_interface2="lo"
+#traffic_interface1="lo"
 
 bper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | head -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
 fper=`/bin/cat 2>/dev/null $APACHE_ACCESS_LOG_FILE | /bin/grep -v "(internal dummy connection)" 2>/dev/null | tail -1 | /usr/bin/awk '{print $4}' | /usr/bin/cut -d"[" -f2 2>/dev/null | /usr/bin/cut -d: -f1 2>/dev/null | sed 's/\//./g' 2>/dev/null`
@@ -641,7 +641,7 @@ cat << EOF
                                     </div><!-- /widget-header -->
                                     <div class="widget-content"><p> </p>
 <table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `vnstat -i $traffic_interface 2>/dev/null`  </font></h5></pre> </table>
-<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `vnstat -i $traffic_interface2 2>/dev/null`  </font></h5></pre> </table>            
+<table id="swap_dashboard" class="table table-hover table-condensed table-bordered"> <pre><h5><font color="#303A34"> `vnstat -i $traffic_interface1 2>/dev/null`  </font></h5></pre> </table>            
 			</div><!-- /widget-content -->
                                 </div><!-- /widget -->
                             </div><!-- /span9 -->
